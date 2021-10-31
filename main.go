@@ -10,25 +10,49 @@ import (
 	"time"
 )
 
-var app *newrelic.Application
+var nrApp *newrelic.Application
 var hostnames []string
+var pollInterval int
+var monitorName string
 
 func main() {
 
+	monitorName = os.Getenv("MONITOR_NAME")
 	hostnames = getHostsFromEnv()
+	pollInterval = setPollIntervalFronEnv()
 
-	app = initNewRelic()
+	nrApp = initNewRelic()
 	println("Waiting up to a minute for NR connection")
-	app.WaitForConnection(time.Minute)
+	nrApp.WaitForConnection(time.Minute)
 
-	go httphandlers.SetupHTTP(app)
+	go httphandlers.SetupHTTP(nrApp)
 
-	app.RecordCustomEvent("DNSMonStarted", map[string]interface{}{
-		"NumHosts": len(hostnames),
+	nrApp.RecordCustomEvent("DNSMonStarted", map[string]interface{}{
+		"NumHosts":    len(hostnames),
+		"MonitorName": monitorName,
 	})
 
 	go monitorDNS(hostnames)
-	tickMonitor()
+	foreverBlockingTickMonitor()
+}
+
+func setPollIntervalFronEnv() int {
+	pollInterval = 300
+	pollIntervalpropstring := os.Getenv("POLL_INTERVAL")
+	pollIntervalPropint, err := strconv.Atoi(pollIntervalpropstring)
+	if err == nil && (len(pollIntervalpropstring) > 0) {
+		if pollIntervalPropint >= 30 {
+			println("Setting poll interval to " + strconv.Itoa(pollIntervalPropint) + " seconds.")
+			pollInterval = pollIntervalPropint
+		} else {
+			println("Setting pollinterval to minimum of 30 seconds")
+			pollInterval = 30
+		}
+	} else {
+		println("Unable to read POLL_INTERVAL, setting to 5 minutes")
+	}
+
+	return pollInterval
 }
 
 func getHostsFromEnv() []string {
@@ -54,24 +78,34 @@ func getHostsFromEnv() []string {
 
 func monitorDNS(hostnames []string) {
 
+	var lastrun time.Time
 	for true {
+
+		lastrun = time.Now()
 
 		for _, hostname := range hostnames {
 			dnsinfo := dnsresolver.GetDNSInfo(hostname)
-			app.RecordCustomEvent("dns_mon", dnsinfo)
+			nrApp.RecordCustomEvent("dns_mon", dnsinfo)
 			bytes, _ := json.Marshal(dnsinfo)
 
 			println(string(bytes))
 
 		}
 
-		time.Sleep(90 * time.Second)
+		duractionSecs := time.Second * time.Duration(pollInterval)
+
+		for true {
+			if time.Now().After(lastrun.Add(duractionSecs)) {
+				break
+			}
+
+			time.Sleep(1 * time.Second)
+		}
 
 	}
 }
 
-func tickMonitor() {
-	monitorName := os.Getenv("MONITOR_NAME")
+func foreverBlockingTickMonitor() {
 
 	for true {
 		event := map[string]interface{}{
@@ -81,8 +115,8 @@ func tickMonitor() {
 
 		println("Tick")
 
-		app.RecordCustomEvent("DNSMonTick", event)
-		time.Sleep(5 * time.Minute)
+		nrApp.RecordCustomEvent("DNSMonTick", event)
+		time.Sleep(3 * time.Minute)
 
 	}
 }
