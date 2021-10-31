@@ -1,26 +1,10 @@
 package dnsresolver
 
 import (
-	"fmt"
 	"net"
-	"os"
 	"strconv"
 	"time"
 )
-
-func PrintDNS(host string) {
-
-	cname, err := net.LookupCNAME(host)
-	println(cname)
-
-	ips, err := net.LookupIP(host)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Could not resolve: %v\n", err)
-	}
-	for _, ip := range ips {
-		fmt.Printf("host "+" IN A %s\n", ip.String())
-	}
-}
 
 func GetDNSInfo(host string) map[string]interface{} {
 
