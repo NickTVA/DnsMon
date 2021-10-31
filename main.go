@@ -6,6 +6,7 @@ import (
 	"github.com/NickTVA/DnsMon/httphandlers"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -14,9 +15,22 @@ var app *newrelic.Application
 func main() {
 
 	hostnames := make([]string, 0)
-	hostnames = append(hostnames, "www.motortrend.com")
-	hostnames = append(hostnames, "www.google.com")
-	hostnames = append(hostnames, "www.dfsfdsafdsd.com")
+
+	//Read hostnames from environment
+	for i := 0; i < 100; i++ {
+
+		hostname := os.Getenv("dns.host." + strconv.Itoa(i))
+		if len(hostname) < 1 {
+			continue
+		}
+		hostnames = append(hostnames, hostname)
+
+	}
+
+	if len(hostnames) < 1 {
+		println("No hostnames in ENV")
+		os.Exit(-1)
+	}
 
 	app = initNewRelic()
 	hostname, _ := os.Hostname()
