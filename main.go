@@ -11,12 +11,15 @@ import (
 )
 
 var app *newrelic.Application
+var hostnames []string
 
 func main() {
 
-	hostnames := getHostsFromEnv()
+	hostnames = getHostsFromEnv()
 
 	app = initNewRelic()
+	println("Waiting up to a minute for NR connection")
+	app.WaitForConnection(time.Minute)
 
 	go httphandlers.SetupHTTP(app)
 
@@ -68,19 +71,19 @@ func monitorDNS(hostnames []string) {
 }
 
 func tickMonitor() {
-	hostname, _ := os.Hostname()
 	monitorName := os.Getenv("MONITOR_NAME")
 
 	for true {
-		time.Sleep(60 * time.Second)
 		event := map[string]interface{}{
-			"hostname":     hostname,
 			"monitor_name": monitorName,
+			"num_hosts":    len(hostnames),
 		}
 
 		println("Tick")
 
 		app.RecordCustomEvent("DNSMonTick", event)
+		time.Sleep(5 * time.Minute)
+
 	}
 }
 
