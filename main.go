@@ -14,6 +14,21 @@ var app *newrelic.Application
 
 func main() {
 
+	hostnames := getHostsFromEnv()
+
+	app = initNewRelic()
+
+	go httphandlers.SetupHTTP(app)
+
+	app.RecordCustomEvent("DNSMonStarted", map[string]interface{}{
+		"NumHosts": len(hostnames),
+	})
+
+	go monitorDNS(hostnames)
+	tickMonitor()
+}
+
+func getHostsFromEnv() []string {
 	hostnames := make([]string, 0)
 
 	//Read hostnames from environment
@@ -31,18 +46,7 @@ func main() {
 		println("No hostnames in ENV")
 		os.Exit(-1)
 	}
-
-	app = initNewRelic()
-	hostname, _ := os.Hostname()
-
-	go httphandlers.SetupHTTP(app)
-
-	app.RecordCustomEvent("DNSMonStarted", map[string]interface{}{
-		"hostname": hostname,
-	})
-
-	go monitorDNS(hostnames)
-	tickMonitor()
+	return hostnames
 }
 
 func monitorDNS(hostnames []string) {
