@@ -38,12 +38,6 @@ func monitorDNS(hostnames []string) {
 		for _, hostname := range hostnames {
 			dnsinfo := dnsresolver.GetDNSInfo(hostname)
 			app.RecordCustomEvent("dns_mon", dnsinfo)
-			app.RecordCustomEvent("my_event_type", map[string]interface{}{
-				"myString": "hello",
-				"myFloat":  0.603,
-				"myInt":    123,
-				"myBool":   true,
-			})
 			bytes, _ := json.Marshal(dnsinfo)
 
 			println(string(bytes))

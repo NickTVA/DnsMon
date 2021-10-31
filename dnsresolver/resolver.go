@@ -9,7 +9,7 @@ import (
 func GetDNSInfo(host string) map[string]interface{} {
 
 	dnsinfo := map[string]interface{}{
-		"host": host,
+		"dns_host": host,
 	}
 
 	cname, err := net.LookupCNAME(host)
