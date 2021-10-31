@@ -5,6 +5,7 @@ import (
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -14,7 +15,11 @@ func SetupHTTP(nrapp *newrelic.Application) {
 	app = nrapp
 	http.HandleFunc("/healthz", healthz)
 	http.HandleFunc("/kill", kill)
-	http.ListenAndServe(":8000", nil)
+
+	port := 8000
+	println("Setting up http connection to handle /healthz on port: " + strconv.Itoa(port))
+
+	http.ListenAndServe(":"+strconv.Itoa(port), nil)
 }
 
 func healthz(w http.ResponseWriter, r *http.Request) {
