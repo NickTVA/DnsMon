@@ -19,3 +19,10 @@ dns.host.1=www.google.com
 
 dns.host.99= Up to 100 hosts to monitor
 
+##Run in Docker
+Copy .env.template to .env Add domains to monitor, a monitor name and a New Relic license key
+
+docker build . -t dnsmon
+
+docker run --env-file .env dnsmon
+

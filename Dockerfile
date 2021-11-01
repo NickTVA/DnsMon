@@ -11,3 +11,4 @@ RUN go build -o /DnsMon/dnsmon
 RUN ls /DnsMon/dnsmon
 
 ENTRYPOINT ["/DnsMon/dnsmon"]
+
