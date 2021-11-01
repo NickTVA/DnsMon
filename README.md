@@ -26,3 +26,12 @@ docker build . -t dnsmon
 
 docker run --env-file .env dnsmon
 
+##Generated events
+####dns_mon:
+
+dns_error set to 1 if error
+
+duration set to ms for DNS lookup
+
+####DNSMonTick:
+Metadata about state of DNS monitor sent evey three minutes
