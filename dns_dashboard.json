@@ -168,7 +168,7 @@
             "nrqlQueries": [
               {
                 "accountId": 2506584,
-                "query": "FROM DnsMon SELECT *"
+                "query": "FROM DnsMon SELECT * where dns_error = 1"
               }
             ]
           },
