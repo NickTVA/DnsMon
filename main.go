@@ -85,7 +85,8 @@ func monitorDNS(hostnames []string) {
 
 		for _, hostname := range hostnames {
 			dnsinfo := dnsresolver.GetDNSInfo(hostname)
-			nrApp.RecordCustomEvent("dns_mon", dnsinfo)
+			dnsinfo["MonitorName"] = monitorName
+			nrApp.RecordCustomEvent("DnsMon", dnsinfo)
 			bytes, _ := json.Marshal(dnsinfo)
 
 			println(string(bytes))
